@@ -1,0 +1,115 @@
+---
+title: 'Digital Methods Project: Sentimental Expressions in Vridsløselille State Prison'
+author: "Toke Jøns Mulvad"
+date: "2020/01/08"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Setup workspace and prerequisites for sentimental textmining
+
+Setup workspace in R markdown
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load necessary packages into R
+```{r, library, echo = FALSE}
+library(tidyverse)
+library(NLP)
+library(tm)
+library(tidytext)
+library(SnowballC)
+library(RColorBrewer)
+library(readtext)
+``` 
+
+
+Also the sentimental analysis library nrc needs to be loaded into R. This will be the basis for the analysis of the text, since NRC have a different way of analysing sentiments in texts than other options. 
+```{r}
+get_sentiments("nrc")
+```
+
+
+## Loading the Annual Reports into R
+
+
+Load text into the R project repository and assigning the path to the textfiles to the value "cname"
+```{r}
+cname <- file.path("./", "text")   
+cname   
+dir(cname)   
+```
+
+
+Assign cname via. the VCorpus function to docs that creates the textcorpus which I will be analysing 
+```{r}
+docs <- VCorpus(DirSource(cname))   
+```
+
+I tell R to write out one of the texts from docs to evaluate if there is any problems and what needs to be done next during the pre-processing of the data. 
+```{r}
+writeLines(as.character(docs[1]))
+```
+
+
+## Pre-process the texts
+
+
+First I handle problematic diacritics and special symbols by removing them from the data in docs
+```{r}
+for (j in seq(docs)) {
+  docs[[j]] <- gsub( "â\200\231","", docs[[j]]) 
+  docs[[j]] <- gsub( "â\200","-", docs[[j]])  
+    docs[[j]] <- gsub("@"," ", docs[[j]])
+  docs[[j]] <- gsub("\\|", " ", docs[[j]])
+  docs[[j]] <- gsub("\u2028", " ", docs[[j]]) 
+  docs[[j]] <- gsub("/"," ", docs[[j]])
+}
+```
+
+I then clean up the text from numbers, capitalisations, whitespaces and unwanted words for this analysis.
+This is done with the tm_map function that 
+```{r}
+docs <- tm_map(docs, removePunctuation)   
+docs <- tm_map(docs, removeNumbers) 
+docs <- tm_map(docs, tolower)
+docs <- tm_map(docs, removeWords, stopwords("danish"))   
+docs <- tm_map(docs, stripWhitespace)
+docs <- tm_map(docs, PlainTextDocument)
+```
+
+
+Writing the writeLines() function allows me to take a look at the text again to see what my clean up has done
+```{r}
+writeLines(as.character(docs[1]))
+```
+
+
+### Stage the Data   
+
+Done with the cleaning of the corpus of texts, I now create a document term matrix (dtm) and will be used to inspect the corpus. Additionally I also create a transposed document matrix (tdm).
+```{r}
+dtm <- DocumentTermMatrix(docs)   
+tdm <- TermDocumentMatrix(docs)   
+```
+
+I inspect the text with dtm using the inspect () function. Which I will be narrowing down to be done on a slice of the corpus, to see how effective the pre-processing of the texts have been. 
+```{r eval = FALSE}
+inspect(dtm [1:3, 50:70])
+dim(dtm) #This will display the number of documents & terms (in that order)
+```
+Since sparsity stands at 100% pre-processing and stageing of the corpus is done and analysis can begin. 
+
+#### Text analysis
+
+To analyse the 
+```{r, sentiments}
+get_sentiment(docs, method = "nrc", path_to_tagger = NULL,
+  cl = NULL, language = "danish", lexicon = "word")
+```
+
+
+
