@@ -32,6 +32,8 @@ Also the sentimental analysis library nrc needs to be loaded into R. This will b
 get_sentiments("nrc")
 ```
 
+Download Annual Reports as .txt from the royal danish librarys website (kb.dk) and save them in a folder in the project repository, here named "text":
+https://soeg.kb.dk/discovery/fulldisplay?docid=alma99122083396305763&context=L&vid=45KBDK_KGL:KGL&lang=da&search_scope=MyInst_and_CI&adaptor=Local%20Search%20Engine&tab=Everything&query=any,contains,Vridsl%C3%B8selille%20%C3%85rsberetning&offset=0
 
 ## Loading the Annual Reports into R
 
