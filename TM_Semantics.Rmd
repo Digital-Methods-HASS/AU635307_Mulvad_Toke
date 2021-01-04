@@ -1,0 +1,121 @@
+---
+title: "Text mining - Semantic Analysis"
+author: "Toke Jøns Mulvad"
+date: "29/12/2020"
+output: html_document
+---
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Install and run the necessary packages
+```{r, load librarys}
+library(tidyverse)
+library(pdftools)
+library(tidytext)
+library(textdata)
+library(here)
+```
+
+## Pre-processing the Text
+Download the annual reports from https://soeg.kb.dk/permalink/45KBDK_KGL/1pioq0f/alma99122083396305763 and create "texts" folder into which the reports are placed.
+I have named the files after the following pattern: "AarVrids_YYYY_YYYY.pdf" 
+To analyse the entire textcorpus, the files are combined, using the "pdf_combine" function, the combined pdf is named textcorpus.pdf
+```{r}
+pdf_combine(c("texts/AarVrids_1861_1865.pdf", "texts/AarVrids_1866_1870.pdf", "texts/AarVrids_1871_1875.pdf", "texts/AarVrids_1876_1880.pdf", "texts/AarVrids_1881_1891.pdf", "texts/AarVrids_1892_1899.pdf", "texts/AarVrids_1900_1910.pdf", "texts/AarVrids_1911_1913.pdf", "texts/AarVrids_1913_1924.pdf", "texts/AarVrids_1924_1950.pdf"), "textcorpus.pdf")
+```
+
+The corpus of more that 5700 pages is then loaded into R 
+```{r}
+docs_path <- here("texts","textcorpus.pdf")
+docs_corpus <- pdf_text(docs_path)
+```
+
+After loading the corpus into R each page then become searchable
+```{r}
+text_p106 <- docs_corpus[106]
+text_p106
+```
+
+### Wrangling Data
+Lines are separated by lines ("\n"), done with the "stringr::str_split()" function. They are then unnested into regular columns using "tidyr::unnest()". Lastly unnecessary spaces are removed by "stringr::str_trim()"
+```{r}
+docs_df <- data.frame(docs_corpus) %>% 
+  mutate(text_full = str_split(docs_corpus, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_trim(text_full)) 
+```
+
+#### Tokens in Tidy Format
+Each word is put in its own column using "tidytext::unnest_tokens"
+```{r}
+docs_tokens <- docs_df %>% 
+  unnest_tokens(word, text_full)
+#Which give a table of 1.066.629 columns
+```
+
+The words can then be counted
+```{r}
+docs_wc <- docs_tokens %>% 
+  count(word) %>% 
+  arrange(-n)
+#Adds up to 61.035 words
+```
+
+Removing stopwords makes later analysis more meaningful
+```{r}
+docs_stop <- docs_tokens %>% 
+  anti_join(stop_words) %>% 
+  select(-docs_corpus)
+```
+
+Afterwards a new count of words can be made, now without any of the stopwords
+```{r}
+docs_swc <- docs_stop %>% 
+  count(word) %>% 
+  arrange(-n)
+#Without stopwords there are 906.932 columns 
+```
+
+It can also be useful to remove any numbers from the corpus while words are kept 
+```{r}
+docs_no_numeric <- docs_stop %>% 
+  filter(is.na(as.numeric(word)))
+#After removing numbers there are 773.579 columns left
+```
+
+```{r}
+length(unique(docs_no_numeric$word))
+#And so, there are 56695 unique words in the corpus
+```
+
+#### Semantic analysis with afinn: 
+Download the afinn semantic lexicon
+```{r}
+get_sentiments("afinn")
+```
+
+Bind words in `docs_stop` to `afinn` lexicon
+```{r}
+docs_afinn <- docs_stop %>% 
+  inner_join(get_sentiments("afinn"))
+```
+
+The semantics can then be set into a graph based on the -5 to +5 afinn ranking
+```{r}
+docs_afinn_hist <- docs_afinn %>% 
+  count(value)
+ggplot(data = docs_afinn_hist, aes(x = value, y = n)) +
+  geom_col()
+```
+
+Lastly we can then look at the total of the scoring: 
+```{r}
+docs_summary <- docs_afinn %>% 
+  summarize(
+    mean_score = mean(value),
+    median_score = median(value)
+  )
+#The mean for the corpus is just on the positive site of the ranking system (0.35) and the median score is also near the middle but nonetheless positive (+1)
+```
