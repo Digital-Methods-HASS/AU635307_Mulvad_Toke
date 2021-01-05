@@ -91,9 +91,10 @@ length(unique(docs_no_numeric$word))
 ```
 
 #### Semantic analysis with afinn: 
-Download the afinn semantic lexicon
+Download the afinn semantic lexicon: https://www2.imm.dtu.dk/pubdb/pubs/6010-full.html 
 ```{r}
 get_sentiments("afinn")
+# Answer yes to the promt (1: Yes / 2: No)
 ```
 
 Bind words in `docs_stop` to `afinn` lexicon
