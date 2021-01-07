@@ -121,4 +121,5 @@ docs_summary <- docs_afinn %>%
 #The mean for the corpus is just on the positive site of the ranking system (0.35) and the median score is also near the middle but nonetheless positive (+1)
 ```
 
-Thanks to Adela Sobotkovas teaching and her exercise om textmining and semantic analysis which this rmd is based on: https://github.com/Digital-Methods-HASS/CDS_W12/blob/main/W11.Rmd
+# Credit
+Thanks to Adela Sobotkovas for her teachings in digital methods for historians and her exercise in text mining, semantic analysis and visualization, which this project is based on: https://github.com/Digital-Methods-HASS/CDS_W12/blob/main/W11.Rmd
