@@ -1,5 +1,5 @@
 ---
-title: "Text mining - Semantic Analysis"
+title: "Text Mining and Semantic Analysis"
 author: "Toke Jøns Mulvad"
 date: "29/12/2020"
 output: html_document
